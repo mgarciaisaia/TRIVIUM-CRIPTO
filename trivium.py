@@ -28,6 +28,9 @@ from sys import version_info
 import unicodedata
 import commands
 import codecs
+from PIL import Image
+
+
 
 # Funciones globales de conversion HEX2BYTES, HEX2BITS y BITS2HEX
 # Convert strings of hex to strings of bytes and back, little-endian style
@@ -93,6 +96,7 @@ class Trivium:
         plaintext = message
         plaintext_hex = plaintext.encode('hex').upper()
         plaintext_bin = hex_to_bits(plaintext_hex)
+        #plaintext_bin = message
         # Imprime mensaje en bits
         #print "Plaintext="+str(plaintext_bin)
         # Imprime cantidad de items del mensaje en bits
@@ -107,10 +111,12 @@ class Trivium:
         # print(bits_to_hex(ciphertext))
         plaintext_hex = bits_to_hex(ciphertext)
         plaintext = plaintext_hex.decode('hex').upper()
-        image=open('linux.jpg','rb+')
-        image.seek(50)
-        image.write(plaintext)
-        image.close()
+        image=Image.open('linux.jpg','r')
+        #image.seek(50)
+        #image.write(plaintext)
+        #image.close()
+        image=Image.frombytes('L',image.size,bytes(plaintext))
+        image.save('linux.jpg')
         if output == 'b' or output == 'B':
             # Retorna texto cifrado en bits
             return  ''.join(map(str,ciphertext))
@@ -202,10 +208,12 @@ def main():
     #print color.OKYELLOW + 'DIGITE EL MENSAJE (TEXTO PLANO O CIFRADO)' + color.ENDC
     #mensaje = unicode(raw_input(),"utf-8")
     #print
-    image = open('linux.jpg', 'rb')
-    image.seek(50)
-    mensaje = image.read()
-    image.close()
+    image = Image.open('linux.jpg', 'r')
+    #image.seek(50)
+
+    mensaje = str(image.tobytes())
+
+
     # Se ingresa la llave
     print color.OKYELLOW + 'DIGITE LA LLAVE (KEY)' + color.ENDC
     llave = raw_input()
@@ -233,7 +241,7 @@ def main():
 
     # Pregunta si se desea encriptar o desencriptar el mensaje
     print color.OKYELLOW
-    opcion = raw_input('SELECCIONE [E] ENCRIPTAR | [D] DESENCRIPTAR: ')
+    opcion = raw_input('SELECCIONE [E] ENCRIPTAR | [D] DESENCRIPTAR:')
     print color.ENDC
     if opcion == 'e' or opcion == 'E':
         print color.OKYELLOW
@@ -242,6 +250,7 @@ def main():
         if salida == 'b' or salida == 'B' or salida == 'h' or salida == 'H':
             print color.BOLD + 'MENSAJE ENCRIPTADO' + color.ENDC
             print color.OKGREEN
+            #print str(mensaje)
             print trivium.encrypt(mensaje,salida)
             print color.ENDC
         else:
