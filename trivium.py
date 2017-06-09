@@ -28,6 +28,8 @@ from sys import version_info
 import unicodedata
 import commands
 import codecs
+
+#Importo Pillow para manejar las imagenes (por el tema del header)
 from PIL import Image
 
 
@@ -89,10 +91,11 @@ class Trivium:
         for i in range(4*288):
             self._gen_keystream()
 
+  
     #=========================================================
     # Metodo para encriptar, recibe el mensaje en texto plano
     #=========================================================
-    def encrypt(self, message, output):
+    def encrypt(self, message):
         plaintext = message
         plaintext_hex = plaintext.encode('hex').upper()
         plaintext_bin = hex_to_bits(plaintext_hex)
@@ -111,19 +114,30 @@ class Trivium:
         # print(bits_to_hex(ciphertext))
         plaintext_hex = bits_to_hex(ciphertext)
         plaintext = plaintext_hex.decode('hex').upper()
+        
+        #Leo la imagen otra
         image=Image.open('linux.jpg','r')
         #image.seek(50)
         #image.write(plaintext)
         #image.close()
-        image=Image.frombytes('L',image.size,bytes(plaintext))
+        
+        #Creo la imagen desde un cacho de bytes
+        image=Image.frombytes('RGB',image.size,plaintext)
         image.save('linux.jpg')
-        if output == 'b' or output == 'B':
+      
+        
+        
+       
+        
+        
+        
+        #if output == 'b' or output == 'B':
             # Retorna texto cifrado en bits
-            return  ''.join(map(str,ciphertext))
-        else:
+        #    return  'O'.join(map(str,ciphertext))
+        #else:
             # Retorn texto cifrado en hexadecimal
-            return bits_to_hex(ciphertext)
-
+        #    return bits_to_hex(ciphertext)
+        return 'OK'
     #==========================================================
     # Metodo para desencriptar, recibe el texto en hexadecimal o bits
     #==========================================================
@@ -131,7 +145,9 @@ class Trivium:
         ciphertext_bin = []
         plaintext_bin = []
         if (any(c.isalpha() for c in cipher)):
-            ciphertext_bin = hex_to_bits(cipher)
+            ciphertext_bin = hex_to_bits(cipher.encode("hex"))
+            #ciphertext_bin = ''.join(format(ord(x), 'b') for x in cipher)
+            #print ciphertext_bin
             for i in range(len(ciphertext_bin)):
                 plaintext_bin.append(self._gen_keystream() ^ ciphertext_bin[i])
         else:
@@ -141,7 +157,22 @@ class Trivium:
 
         plaintext_hex = bits_to_hex(plaintext_bin)
         plaintext = plaintext_hex.decode('hex').upper()
-        return plaintext
+        
+        #Leo la imagen a encriptar
+        image=Image.open('linux.jpg','r')
+        #image.seek(50)
+        #image.write(plaintext)
+        #image.close()
+        
+        #Creo la imagen desde un cacho de bytes encriptados
+        image=Image.frombytes('RGB',image.size,bytes(plaintext))
+        
+        image.save('linux.jpg')
+        
+            
+      
+        
+        return "OK"
 
     def keystream(self):
         """output keystream
@@ -208,20 +239,25 @@ def main():
     #print color.OKYELLOW + 'DIGITE EL MENSAJE (TEXTO PLANO O CIFRADO)' + color.ENDC
     #mensaje = unicode(raw_input(),"utf-8")
     #print
+    
+    # Leo la imagen
     image = Image.open('linux.jpg', 'r')
     #image.seek(50)
-
+    #paso a bytes la imagen y luego a string
+    
+   
     mensaje = str(image.tobytes())
 
 
     # Se ingresa la llave
     print color.OKYELLOW + 'DIGITE LA LLAVE (KEY)' + color.ENDC
-    llave = raw_input()
+    #llave = raw_input()
+    llave = '80000000000000000000'
     print
     # Se ingresa el vector de inicializacion
     print color.OKYELLOW + 'DIGITE EL VECTOR DE INICIALIZACION (IV)' + color.ENDC
-    vector_inicializacion = raw_input()
-
+    #vector_inicializacion = raw_input()
+    vector_inicializacion ='00000000000000000000'
     # Se codifican las variables ingresadas
     key_hex = llave.encode('hex').upper()
     iv_hex =  vector_inicializacion.encode('hex').upper()
@@ -245,21 +281,20 @@ def main():
     print color.ENDC
     if opcion == 'e' or opcion == 'E':
         print color.OKYELLOW
-        salida = raw_input('FORMATO DE SALIDA DEL CIFRADO [B] BINARIO | [H] HEXADECIMAL: ')
+        #salida = raw_input('FORMATO DE SALIDA DEL CIFRADO [B] BINARIO | [H] HEXADECIMAL: ')
         print color.ENDC
-        if salida == 'b' or salida == 'B' or salida == 'h' or salida == 'H':
-            print color.BOLD + 'MENSAJE ENCRIPTADO' + color.ENDC
-            print color.OKGREEN
-            #print str(mensaje)
-            print trivium.encrypt(mensaje,salida)
-            print color.ENDC
-        else:
-            main()
+        #if salida == 'b' or salida == 'B' or salida == 'h' or salida == 'H':
+        print color.BOLD + 'ENCRIPTANDO IMAGEN...' + color.ENDC
+        print color.OKGREEN
+        #print str(mensaje)
+        print trivium.encrypt(mensaje)
+        print color.ENDC
+    
     elif opcion == 'd' or opcion == 'D':
-            print color.BOLD + 'MENSAJE DESENCRIPTADO' + color.ENDC
-            print color.OKGREEN
-            print trivium.decrypt(mensaje)
-            print color.ENDC
+        print color.BOLD + 'DESENCRIPTANDO IMAGEN...' + color.ENDC
+        print color.OKGREEN
+        print trivium.decrypt(mensaje)
+        print color.ENDC
     else:
         main()
 
