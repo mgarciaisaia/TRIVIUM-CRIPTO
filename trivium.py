@@ -151,7 +151,9 @@ class Trivium:
             for i in range(len(ciphertext_bin)):
                 plaintext_bin.append(self._gen_keystream() ^ ciphertext_bin[i])
         else:
-            ciphertext_bin = list(str(cipher))
+            #ciphertext_bin = list(str(cipher))
+            ciphertext_bin = hex_to_bits(cipher.encode("hex"))
+            print ciphertext_bin
             for i in range(len(ciphertext_bin)):
                 plaintext_bin.append(self._gen_keystream() ^ int(ciphertext_bin[i]))
 
@@ -165,7 +167,7 @@ class Trivium:
         #image.close()
         
         #Creo la imagen desde un cacho de bytes encriptados
-        image=Image.frombytes('RGB',image.size,bytes(plaintext))
+        image=Image.frombytes('RGB',image.size,plaintext)
         
         image.save('linux.jpg')
         
@@ -228,11 +230,11 @@ def main():
     cmd = commands.getoutput('clear')
     print cmd
     print color.OKBLUE
-    print ('+-----------------------------------------------+')
-    print ('| MSEG-02 - PRINCIPIOS DE CRIPTOGRAFIA          |')
-    print ('| LABORATORIO DE TRIVIUM                        |')
-    print ('| JOHNNY.PAN | ESTEBAN.CASTILLO | MARIO.ZAMORA  |')
-    print ('+-----------------------------------------------+')
+    print ('+###############################################+')
+    print ('#           UTN-FRBA - CRIPTOGRAFIA             #')
+    print ('#                   TRIVIUM                     #')
+    print ('#   SEQUEIRA | GARCIA ISAIAS | CAPUTO | MERIDA  #')
+    print ('+###############################################+')
     print color.ENDC
 
     # Se ingresa el mensaje en texto plano o cifrado
@@ -252,12 +254,12 @@ def main():
     # Se ingresa la llave
     print color.OKYELLOW + 'DIGITE LA LLAVE (KEY)' + color.ENDC
     #llave = raw_input()
-    llave = '80000000000000000000'
+    llave = '00010203040506070809'
     print
     # Se ingresa el vector de inicializacion
     print color.OKYELLOW + 'DIGITE EL VECTOR DE INICIALIZACION (IV)' + color.ENDC
     #vector_inicializacion = raw_input()
-    vector_inicializacion ='00000000000000000000'
+    vector_inicializacion = '00000000000000000000'
     # Se codifican las variables ingresadas
     key_hex = llave.encode('hex').upper()
     iv_hex =  vector_inicializacion.encode('hex').upper()
