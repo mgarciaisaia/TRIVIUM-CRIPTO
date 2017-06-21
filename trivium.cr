@@ -1,4 +1,6 @@
 # Available online at http://man.as/trivium-crystal-utnfrba
+require "stumpy_png"
+# require "stumpy_core"
 
 key = (ENV["TRIVIUM_KEY"]? || "00010203040506070809").hexbytes
 init_v = (ENV["TRIVIUM_IV"]? || "1112131415161718191a").hexbytes
@@ -82,19 +84,48 @@ class Trivium
     k
   end
 
+  def next_2bytes : UInt16
+    ((0u16 + next_byte) << 8) | next_byte
+  end
+
   def cipher(message : Bytes)
     result = Bytes.new(message.size)
     message.each_with_index { |m, i| result[i] = m ^ next_byte }
     result
   end
+
+  def cipher(message : StumpyCore::RGBA)
+    StumpyCore::RGBA.new(
+      next_2bytes ^ message.r,
+      next_2bytes ^ message.g,
+      next_2bytes ^ message.b,
+      next_2bytes ^ message.a
+    )
+  end
 end
 
-raise "Usage: trivium input_file output_file" unless ARGV.size == 2
+raise "Usage: trivium [--png] input_file output_file" unless [2, 3].includes? ARGV.size
 
-source_file = ARGV[0]
-dest_file = ARGV[1]
+is_png = false
+
+if ARGV[0] == "--png"
+  is_png = true
+  source_file = ARGV[1]
+  dest_file = ARGV[2]
+else
+  source_file = ARGV[0]
+  dest_file = ARGV[1]
+end
 
 trivium = Trivium.new(key, init_v)
-File.open(source_file) { |source|
-  File.write(dest_file, trivium.cipher(source.gets_to_end.to_slice))
-}
+if is_png
+  input_image = StumpyPNG.read(source_file)
+  ciphered_image = StumpyCore::Canvas.new(input_image.width, input_image.height) { |x, y|
+    trivium.cipher(input_image[x, y])
+  }
+  StumpyPNG.write(ciphered_image, dest_file)
+else
+  File.open(source_file) { |source|
+    File.write(dest_file, trivium.cipher(source.gets_to_end.to_slice))
+  }
+end

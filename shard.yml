@@ -1,0 +1,8 @@
+name: trivium
+version: 0.1.0
+crystal: 0.22.0
+
+dependencies:
+  stumpy_png:
+    github: l3kn/stumpy_png
+    version: "~> 4.1.1"
